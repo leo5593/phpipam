@@ -153,11 +153,29 @@ class Tools extends Common_functions {
 		return is_array($out) ? array_values($out) : false;
 	}
 
-
-
-
-
-
+	/**
+	 * Fetch vlans by subnets id. Joined query
+	 *
+	 * @access public
+	 * @return array|bool
+	 */
+	public function fetch_vlans_by_subnets ()
+	{
+		$query = 'SELECT s.id,v.name,s.description,s.sectionId,v.number FROM `vlans` v JOIN subnets s ON v.vlanid = s.vlanid';
+		# fetch
+		try { $vlans = $this->Database->getObjectsQuery($query); }
+		catch (Exception $e) {
+			$this->Result->show("danger", _("Error: ").$e->getMessage());
+			return false;
+		}
+		# reorder
+		$out = array();
+		foreach ($vlans as $vlan) {
+			$out[$vlan->id] = $vlan;
+		}
+		# result
+		return is_array($out) ? $out : false;
+	}
 
 	/**
 	 *	@search methods
@@ -2907,7 +2925,7 @@ class Tools extends Common_functions {
                         WHERE l.id = $id
 
                         UNION ALL
-                        SELECT a.id, a.ip_addr as name, 'mask', 'addresses' as type, a.subnetId as sectionId, a.location, a.hostname as description
+                        SELECT a.id, a.ip_addr as name, 'mask', 'addresses' as type, a.subnetId as sectionId, a.location, a.description
                         FROM ipaddresses a
                         JOIN locations l
                         ON a.location = l.id
