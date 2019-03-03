@@ -86,6 +86,7 @@ print "	<th>"._('Device')."</th>";
 print "	<th>"._('Note')."</th>";
 print "	<th>"._('Tag')."</th>";
 print "	<th>"._('Gateway')."</th>";
+print "	<th>"._('Location')."</th>";
 print $custom_fields_names;
 print "	</tr>";
 
@@ -102,6 +103,7 @@ print "	<td><input type='checkbox' name='device'> </td>";
 print "	<td><input type='checkbox' name='note'> </td>";
 print "	<td><input type='checkbox' name='tag'> </td>";
 print "	<td><input type='checkbox' name='gateway'> </td>";
+print "	<td><input type='checkbox' name='location'> </td>";
 print $custom_fields_boxes;
 print "	</tr>";
 

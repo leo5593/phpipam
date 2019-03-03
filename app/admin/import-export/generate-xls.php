@@ -41,7 +41,14 @@ if ($devices!==false) {
     	$devices_indexed[$d->id] = $d;
     }
 }
-
+# get Locations and reorder
+$locations = $Tools->fetch_all_objects ("locations", "name");
+$locations_indexed = array();
+if ($locations!==false) {
+	foreach($locations as $l) {
+		$locations_indexed[$l->id] = $l;
+	}
+}
 
 
 //get all custom fields!
@@ -49,7 +56,7 @@ if ($devices!==false) {
 $myFields = $Tools->fetch_custom_fields('ipaddresses');
 $myFieldsSize = sizeof($myFields);
 
-$colSize = 8 + $myFieldsSize;
+$colSize = 9 + $myFieldsSize;
 
 //formatting headers
 $format_header = $workbook->addFormat();
@@ -127,6 +134,7 @@ foreach ($sections as $section) {
 			$worksheet->write($lineCount, 6, _('device' ),$format_title);
 			$worksheet->write($lineCount, 7, _('port' ),$format_title);
 			$worksheet->write($lineCount, 8, _('note' ),$format_title);
+			$worksheet->write($lineCount, 9, _('location' ),$format_title);
 			$m = 9;
 			//custom
 			if(sizeof($myFields) > 0) {
@@ -160,6 +168,7 @@ foreach ($sections as $section) {
 				$worksheet->write($lineCount, 6, $ip['switch']);
 				$worksheet->write($lineCount, 7, $ip['port']);
 				$worksheet->write($lineCount, 8, $ip['note']);
+				$worksheet->write($lineCount, 9, $locations_indexed[$ip['location']]->name);
 				//custom
 				$m = 9;
 				if(sizeof($myFields) > 0) {
