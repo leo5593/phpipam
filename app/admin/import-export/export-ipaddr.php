@@ -138,6 +138,19 @@ if( (isset($_GET['gateway'])) && ($_GET['gateway'] == "on") ) {
 	$worksheet->write($curRow, $curColumn, _('Gateway') ,$format_header);
 	$curColumn++;
 }
+if( (isset($_GET['location'])) && ($_GET['location'] == "on") ) {
+	$worksheet->write($curRow, $curColumn, _('location') ,$format_header);
+	$curColumn++;
+	# get Locations and reorder
+	$locations = $Tools->fetch_all_objects ("locations", "name");
+	$locations_indexed = array();
+	if ($locations!==false) {
+		foreach($locations as $l) {
+			$locations_indexed[$l->id] = $l;
+		}
+	}
+
+}
 
 //custom fields
 if(sizeof($custom_fields) > 0) {
@@ -253,6 +266,11 @@ if($all_sections!==false) {
 					if( (isset($_GET['gateway'])) && ($_GET['gateway'] == "on") ) {
 						$ip['gateway'] = ($ip['is_gateway']) ? _("Yes") : _("No");
 						$worksheet->write($curRow, $curColumn, $ip['gateway'], $format_text);
+						$curColumn++;
+					}
+
+					if( (isset($_GET['location'])) && ($_GET['location'] == "on") ) {
+						$worksheet->write($curRow, $curColumn, $locations_indexed[$ip['location']]->name, $format_text);
 						$curColumn++;
 					}
 
