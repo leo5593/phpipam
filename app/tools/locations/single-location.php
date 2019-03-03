@@ -129,6 +129,8 @@ else {
             	// fetch objects
             	$objects = $Tools->fetch_location_objects ($location->id);
 
+		$vlans = $Tools->fetch_vlans_by_subnets();
+
             	print "<tr>";
             	print "	<td colspan='2'><h4 style='margin-top:50px;'>"._('Belonging objects')."</h4><hr></td>";
             	print "</tr>";
@@ -169,6 +171,7 @@ else {
                             	// fetch subnet
                             	if($o->type=="addresses") {
                                 	$subnet = $Tools->fetch_object ("subnets", "id", $o->sectionId);
+					$vlans[$o->sectionId]->count++; //sectionId is subnetsid instead
                             	}
                             	// link
                             	if($o->type=="devices")     { $href = create_link("tools", "devices", $o->id); }
@@ -199,6 +202,20 @@ else {
                         print "</td>";
                     	print "</tr>";
                     }
+		    print "<tr>";
+            	    print "	<th>"._("Adresses stats")."</th>";
+		    print "<td style='line-height:20px;'>";
+		    foreach ($vlans as $vlan) {
+			//print json_encode($vlan);
+			if($vlan->count)
+			{
+				$href = create_link("subnets", $vlan->sectionId , $vlan->id);
+				print "<a href='$href'>$vlan->description</a> : $vlan->count <span class='text-muted'>(vlan $vlan->number : $vlan->name)</span><br>";
+			}
+		    }
+			print "<hr>";
+                        print "</td>";
+                    	print "</tr>";
                 }
 
 
