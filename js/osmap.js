@@ -16,7 +16,7 @@ var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
 var baseMaps = {"OSM": osmfr,"Topo": OpenTopoMap};
 var overlayMaps = {};
 
-
+ overlayMaps["PDFT"] = L.imageOverlay("http://localhost/PDFT_plan_2028.png", [ [39.848200446956376, -4.107363224029542],[39.830290856981854, -4.073524475097657]] ).addTo(osmap);
 
 L.control.layers(baseMaps,overlayMaps).addTo(osmap);
 
