@@ -69,7 +69,7 @@ else {
 
         // calculate
         if (sizeof($all_locations)>0) {
-		if($gmaps_api_key!="OSMAP"){ ?>
+            if(Config::get('gmaps_api_key')!="OSMAP"){ ?>
             <script type="text/javascript">
                 $(document).ready(function() {
                     // init gmaps
@@ -168,7 +168,7 @@ else {
 			var group = new L.featureGroup(markers);
 			osmap.fitBounds(group.getBounds().pad(0.5));
 
-			osmap.on('contextmenu', function(e) { $("#osmapData").html("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng);});	
+			osmap.on('contextmenu', function(e) { $("#osmapData").html("Lat, Lon : " + e.latlng.lat.toFixed(8) + ", " + e.latlng.lng.toFixed(8));});	
 
             	}
 		$(document).ready(initMap);
