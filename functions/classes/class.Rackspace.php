@@ -186,6 +186,66 @@ class phpipam_rack extends Tools {
         return $this->fetch_multiple_objects ("rackContents", "rack", $id, "rack_start", true);
     }
 
+    /**
+     * Calculate free U for given rack, devices and content
+     * @param  object $rack
+     * @param  mixed $rack_devices
+     * @param  mixed $rack_contents
+     * @param  mixed $current_device
+     * @return array
+     */
+    public function free_u($rack, $rack_devices, $rack_contents, $current_device = null) {
+        $current_device      = (object) $current_device;
+        $current_device_size = isset($current_device->rack_size) ? $current_device->rack_size-1 : 0;
+
+        // available spaces
+        $available_front = [];
+        $available_back  = [];
+
+        for($m=1;$m<=$rack->size-$current_device_size;$m++) {
+            $available_front[$m] = $m;
+        }
+
+        if($rack->hasBack) {
+            foreach($available_front as $m) {
+                $available_back[$rack->size+$m] = $m;
+            }
+        }
+
+        $devices = [];
+        if (is_array($rack_devices))  $devices = array_merge($devices, $rack_devices);
+        if (is_array($rack_contents)) $devices = array_merge($devices, $rack_contents);
+
+        // remove units used by devices
+        foreach ($devices as $d) {
+            if (property_exists($current_device, 'hostname') == property_exists($d, 'hostname')) {
+                // $current_device and $d are of the same type = device or rack_content item
+                // Skip current device/rack_content
+                if ($current_device->id == $d->id)
+                    continue;
+            }
+
+            // Remove U positions blocked by other devices
+            for($m=$d->rack_start-$current_device_size; $m<=($d->rack_start+($d->rack_size-1)); $m++) {
+                $pos = $m > $rack->size ? $m - $rack->size : $m;
+                if ($pos<1) $pos = 1;
+                if ($pos>$rack->size) $pos = $rack->size;
+
+                if ($d->rack_start < $rack->size)
+                    unset($available_front[$pos]);
+                else
+                    unset($available_back[$rack->size+$pos]);
+            }
+        }
+
+        // Top of Rack
+        for($m=$rack->size-$current_device_size+1; $m<=$rack->size; $m++) {
+            unset($available_front[$m]);
+            unset($available_back[$rack->size+$m]);
+        }
+
+        return [$available_front, $available_back];
+    }
 
 
 
@@ -470,10 +530,15 @@ class RackDrawer extends Common_functions {
             imagecopy($this->template, $unit, 0, $y, 0, 0, $this->rackXSize, $this->unitYSize);
             $text = ($this->rack->getOrientation()) ? $i + 1 : $this->rack->getSpace() - $i;
             $textBox = imagettfbbox(12, 0, dirname(__FILE__)."/../../css/fonts/MesloLGS-Regular.ttf", $text);
+
+            // disable transparency for U labels
+            imagealphablending($this->template, true);
             imagettftext($this->template, 12, 0,
                 $this->rackInsideXOffset - 4 - abs($textBox[2] - $textBox[0]),
                 $y + abs($textBox[1] - $textBox[7]) + round(($this->unitYSize - ($textBox[1] - $textBox[7])) / 2),
                 $textColor, dirname(__FILE__)."/../../css/fonts/MesloLGS-Regular.ttf", $text);
+            imagealphablending($this->template, false);
+
             $y += $this->unitYSize;
         }
         imagecopy($this->template, $bottom, 0, $y, 0, 0, $this->rackXSize, $this->bottomYSize);

@@ -149,6 +149,7 @@ class Admin extends Common_functions {
 	 * @return void
 	 */
 	public function object_modify ($table, $action=null, $field="id", $values = [], $values_log = []) {
+		if (!is_string($table) || strlen($table) == 0) return false;
 		# strip tags
 		$values     = $this->strip_input_tags ($values);
 		$values_log = $this->strip_input_tags ($values_log);
@@ -288,6 +289,9 @@ class Admin extends Common_functions {
 	 * @return null|false
 	 */
 	public function remove_object_references ($table, $field, $old_value, $new_value = NULL) {
+		$table = $this->Database->escape($table);
+		$field = $this->Database->escape($field);
+
 		try { $this->Database->runQuery("update `$table` set `$field` = ? where `$field` = ?;", array($new_value, $old_value)); }
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
@@ -306,6 +310,9 @@ class Admin extends Common_functions {
 	 * @return null|false
 	 */
 	public function update_object_references ($table, $field, $old_value, $new_value) {
+		$table = $this->Database->escape($table);
+		$field = $this->Database->escape($field);
+
 		try { $this->Database->runQuery("update `$table` set `$field` = ? where `$field` = ?;", array($new_value, $old_value)); }
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
@@ -600,6 +607,8 @@ class Admin extends Common_functions {
 	 * @return void
 	 */
 	public function replace_fields ($field, $search, $replace) {
+		$field = $this->Database->escape($field);
+
 		# check number of items
 		$count = $this->count_database_objects ("ipaddresses", $field, "%$search%", true);
 		# if some exist update
@@ -634,6 +643,21 @@ class Admin extends Common_functions {
 	 */
 
 	/**
+	 * Valid custom field database types
+	 * @return array
+	 */
+	public function valid_custom_field_types() {
+		return ["varchar"  =>"varchar",
+				"integer"  =>"int",
+				"boolean"  =>"bool",
+				"text"     =>"text",
+				"date"     =>"date",
+				"datetime" =>"datetime",
+				"set"      =>"set",
+				"enum"     =>"enum"];
+	}
+
+	/**
 	 * Updates custom field definition
 	 *
 	 * @access public
@@ -641,6 +665,10 @@ class Admin extends Common_functions {
 	 * @return bool
 	 */
 	public function update_custom_field_definition ($field) {
+		if (!in_array($field['fieldType'], $this->valid_custom_field_types())) {
+			$this->Result->show("danger", _("Error: ")._("Invalid custom field type"));
+			return false;
+		}
 
 	    # set type definition and size of needed
 	    if($field['fieldType']=="bool" || $field['fieldType']=="text" || $field['fieldType']=="date" || $field['fieldType']=="datetime")	{ $field['ftype'] = $field['fieldType']; }
@@ -668,7 +696,7 @@ class Admin extends Common_functions {
 
 	    # set update query
 	    if($field['action']=="delete") 								{ $query  = "ALTER TABLE `$field[table]` DROP `$field[oldname]`;"; }
-	    else if ($field['action']=="edit"&&@$field['NULL']=="NO") 	{ $query  = "ALTER IGNORE TABLE `$field[table]` CHANGE COLUMN `$field[oldname]` `$field[name]` $field[ftype] $charset DEFAULT :default NOT NULL COMMENT :comment;"; }
+	    else if ($field['action']=="edit"&&@$field['NULL']=="NO") 	{ $query  = "ALTER TABLE `$field[table]` CHANGE COLUMN `$field[oldname]` `$field[name]` $field[ftype] $charset DEFAULT :default NOT NULL COMMENT :comment;"; }
 	    else if ($field['action']=="edit") 							{ $query  = "ALTER TABLE `$field[table]` CHANGE COLUMN `$field[oldname]` `$field[name]` $field[ftype] $charset DEFAULT :default COMMENT :comment;"; }
 	    else if ($field['action']=="add"&&@$field['NULL']=="NO") 	{ $query  = "ALTER TABLE `$field[table]` ADD COLUMN 	`$field[name]` 					$field[ftype] $charset DEFAULT :default NOT NULL COMMENT :comment;"; }
 	    else if ($field['action']=="add")							{ $query  = "ALTER TABLE `$field[table]` ADD COLUMN 	`$field[name]` 					$field[ftype] $charset DEFAULT :default NULL COMMENT :comment;"; }
@@ -731,6 +759,9 @@ class Admin extends Common_functions {
 	 * @return boolean
 	 */
 	public function reorder_custom_fields ($table, $next, $current) {
+	    $table = $this->Database->escape($table);
+	    $next = $this->Database->escape($next);
+	    $current = $this->Database->escape($current);
 	    # get current field details
 	    $Tools = new Tools ($this->Database);
 	    $old = (array) $Tools->fetch_full_field_definition ($table, $current);

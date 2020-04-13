@@ -1,3 +1,35 @@
+== 1.4.1
+
+    Bugfixes:
+    ----------------------------
+    + Fixed upgrade queries issues from 1.3.2 to 1.4;
+    + Fixed boolean printout in footer (#2625);
+    + Fixed BGP Admin isn't working (#2631);
+    + MySQL 8.0 compatibility. (#2646,#2239);
+    + Table layout not aligned (#2656);
+    + Improve scanning requirement checks (#1183);
+    + PDNS Add/Edit DNS record not working for normal users (#2686);
+    + Unable to save settings with link addresses = text custom field (#2702);
+    + Kea MAC address display issue (#2704);
+    + Returned custom fields to devices table (#2572);
+    + Invalid scan agent key warning;
+    + Subnet filter issue when IP contains 0 octet. (#2748);
+    + Add VLAN button not working (#2741);
+    + Incorrect subnet links in /tools/vrf/ view. (#2774);
+    + Location data missing in exports. (#2833);
+    + Check mysqldump path when exporting database;
+    + Current rack position missing when editing a device. (#2545);
+    + API:
+        + Fixed /user/ calls for SSL with app code (static app code);
+        + Address IP field not displayed when using filter_by (#2934);
+        + Addresses first_free & Subnets first/last_subnet thread safety (#2960);
+
+    Security Fixes:
+    ----------------------------
+    + SQL injections processing `tableName` (#2738);
+    + SQL injections processing `ftype` (#2751);
+    + All circuits map, PHP object injection (#2937);
+
 == 1.4
 
     New features:
@@ -6,7 +38,7 @@
     + Sessions can be now stored in database (#516);
     + Two-factor authentication - otp (Google Authenticator);
     + Customers module (#694);
-    + Routing module (BGP, OSPF) (#2135);
+    + Routing module (BGP) (#2135);
     + Search for free subnet inside whole section;
 
     Enhancements, changes:
@@ -42,12 +74,15 @@
         + Add Mac Search for Addresses controller (#2005);
         + New overlapping API call;
         + New global API parameter filter_match = full,partial,regex;
+        + Add Tools API customers submodule;
+        + Fix filtered results to always return data as array (#2558);
     + Widgets:
         + New user instruction widget (#2383);
 
     Translations:
     ----------------------------
-    + Japanese translation added;
+    + Japanese (ja_JP) translation added;
+    + Traditional Chinese (zh_TW) translation added;
 
     Bugfixes:
     ----------------------------
@@ -64,6 +99,7 @@
     + Fix adding new VLANs to an empty L2Domain (#2400);
     + Fix Nested child subnets with "na" permissions visible (#2223);
     + Fix translations containing apostrophes break functionality (#2504);
+    + Set requestedAuthnContext to false for SAML (#2457);
     + API:
         + Fix inconsistent API success value returned (#2045);
         + Fix filter_by functionality (#2392);

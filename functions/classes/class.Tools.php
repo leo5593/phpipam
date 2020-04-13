@@ -236,11 +236,11 @@ class Tools extends Common_functions {
 	 */
 	private function search_subnets_range ($search_term, $high, $low, $custom_fields = array()) {
 		# reformat low/high
-		if($high==0 && $low==0)	{ $high = "1"; $low="1"; }
+		if($high==0 && $low==0)	{ $high = "1"; $low = "1"; }
 
 		# set search query
 		$query[] = "select * from `subnets` where `description` like :search_term ";
-		$query[] = "or `subnet` between :low and :high ";
+		$query[] = "or (`subnet` >= :low and `subnet` <= :high )";
 		# custom
 	    if(sizeof($custom_fields) > 0) {
 			foreach($custom_fields as $myField) {
@@ -292,7 +292,7 @@ class Tools extends Common_functions {
 					# parse address
 					$net = $this->Net_IPv4->parseAddress($this->transform_address($s['subnet']).'/'.$s['mask'], "dotted");
 
-					if($low>$this->transform_to_decimal(@$net->network) && $low<$this->transform_address($net->broadcast, "decimal")) {
+					if($low>=$this->transform_to_decimal(@$net->network) && $low<=$this->transform_address($net->broadcast, "decimal")) {
 						$ids[] = $s['id'];
 					}
 				}
@@ -735,6 +735,8 @@ class Tools extends Common_functions {
 	 * @return array
 	 */
 	public function fetch_custom_fields ($table) {
+		$table = $this->Database->escape($table);
+
     	# fetch columns
 		$fields = $this->fetch_columns ($table);
 
@@ -1013,7 +1015,7 @@ class Tools extends Common_functions {
 	 * @return array|null
 	 */
 	public function requests_fetch_available_subnets () {
-		try { $subnets = $this->Database->getObjectsQuery("SELECT * FROM `subnets` where `allowRequests`=1 and `isFull` != 1 ORDER BY `subnet`;"); }
+		try { $subnets = $this->Database->getObjectsQuery("SELECT * FROM `subnets` where `allowRequests`=1 and COALESCE(`isFull`,0) != 1 ORDER BY `subnet`;"); }
 		catch (Exception $e) { $this->Result->show("danger", $e->getMessage(), false);	return false; }
 
 		# save
@@ -1435,6 +1437,9 @@ class Tools extends Common_functions {
 	 * @return bool
 	 */
 	public function fix_field ($table, $field) {
+		$table = $this->Database->escape($table);
+		$field = $this->Database->escape($field);
+
 		# set fix query
 		$query  = "alter table `$table` add ";
 		$query .= trim($this->get_field_fix ($table, $field), ",");
@@ -1558,6 +1563,9 @@ class Tools extends Common_functions {
 	 * @return void
 	 */
 	private function fix_missing_index ($table, $index_name) {
+		$table = $this->Database->escape($table);
+		$index_name = $this->Database->escape($index_name);
+
 		// get definition
 		$file = $this->read_db_schema();
 
@@ -1633,6 +1641,23 @@ class Tools extends Common_functions {
 
 		if ($linked_field_index_found || !in_array($linked_field, $valid_fields))
 			return;
+
+		$schema = $this->getTableSchemaByField('ipaddresses');
+		$data_type = $schema[$linked_field]->DATA_TYPE;
+
+		if( in_array($data_type, ['text', 'blob']) ) {
+			// The prefix length must be specified when indexing TEXT/BLOB datatypes.
+			// Max prefix length and behaviour varies with strict mode, MySQL/MariaDB versions and configured collation.
+			//
+			// Too complex: Avoid creating an index for this datatype and warn of possible poor performance.
+
+			$this->Result->show("warning",
+				_("Warning: ")._("Unable to create index for MySQL TEXT/BLOB datatypes.")."<br>".
+				_("Reduced performance when displaying linked addresses by ").escape_input($linked_field)." ($data_type)"."<br>".
+				_("Change custom field data type to VARCHAR and re-save to enable indexing.")
+			);
+			return;
+		}
 
 		// Create selected linked_field index if not exists.
 		try { $this->Database->runQuery("ALTER TABLE `ipaddresses` ADD INDEX ($linked_field);"); }
@@ -3505,14 +3530,14 @@ class Tools extends Common_functions {
 		$strict_mode   = ($type === 'IPv6') ? '0' : '2';
 
 		if($perc) {
-			$query = "SELECT SQL_CACHE s.sectionId,s.id,s.subnet,mask,IF(char_length(s.description)>0,s.description,'No description') AS description,
+			$query = "SELECT s.sectionId,s.id,s.subnet,mask,IF(char_length(s.description)>0,s.description,'No description') AS description,
 					COUNT(*) AS `usage`,ROUND(COUNT(*)/(POW(2,$type_max_mask-`mask`)-$strict_mode)*100,2) AS `percentage` FROM `ipaddresses` AS `i`
 					LEFT JOIN `subnets` AS `s` ON i.subnetId = s.id
 					WHERE s.mask < ($type_max_mask-1) AND CAST(s.subnet AS UNSIGNED) $type_operator 4294967295
 					GROUP BY i.subnetId
 					ORDER BY `percentage` DESC $limit;";
 		} else {
-			$query = "SELECT SQL_CACHE s.sectionId,s.id,s.subnet,mask,IF(char_length(s.description)>0,s.description,'No description') AS description,
+			$query = "SELECT s.sectionId,s.id,s.subnet,mask,IF(char_length(s.description)>0,s.description,'No description') AS description,
 					COUNT(*) AS `usage` FROM `ipaddresses` AS `i`
 					LEFT JOIN `subnets` AS `s` ON i.subnetId = s.id
 					WHERE CAST(s.subnet AS UNSIGNED) $type_operator 4294967295

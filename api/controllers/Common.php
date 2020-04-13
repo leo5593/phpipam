@@ -300,10 +300,6 @@ class Common_api_functions {
 		# reindex filtered result
 		$result = array_values($result2);
 
-		// Single result - return as object
-		if (sizeof($result) == 1)
-			return $result[0];
-
 		return $result;
 	}
 
@@ -556,27 +552,26 @@ class Common_api_functions {
 	 * @return void
 	 */
 	protected function transform_address ($result) {
-		// multiple options
-		if (is_array($result)) {
-			foreach($result as $k=>$r) {
-				// remove IP
-				if (isset($r->ip))					{ unset($r->ip); }
-				// transform
-				if (isset($r->subnet))				{ $r->subnet  = $this->Subnets->transform_address ($r->subnet,  "dotted"); }
-				elseif (isset($r->ip_addr))			{ $r->ip_addr = $this->Subnets->transform_address ($r->ip_addr, "dotted"); }
-			}
-		}
-		// single item
-		else {
-				// remove IP
-				if (isset($result->ip))				{ unset($result->ip); }
-				// transform
-				if (isset($result->subnet))			{ $result->subnet  = $this->Subnets->transform_address ($result->subnet,  "dotted"); }
-				elseif (isset($result->ip_addr))	{ $result->ip_addr = $this->Subnets->transform_address ($result->ip_addr, "dotted"); }
+		if (is_object($result)) {
+			$result_is_object = true;
+			$result = [$result];
 		}
 
-		# return
-		return $result;
+		if (!is_array($result))
+			return $result;
+
+		foreach($result as $r) {
+			$properties = ['subnet', 'ip_addr'];
+			foreach($properties as $property) {
+				if (property_exists($r, $property)) {
+					// remove IP & transform property to dotted notation
+					unset($r->ip);
+					$r->{$property} = $this->Subnets->transform_address($r->{$property}, "dotted");
+				}
+			}
+		}
+
+		return $result_is_object===true ? $result[0] : $result;
 	}
 
 	/**
@@ -756,9 +751,10 @@ class Common_api_functions {
 	 * @access protected
 	 * @param mixed $result (default: null)
 	 * @param mixed $controller (default: null)
+	 * @param mixed $tools_table (default: null)
 	 * @return void
 	 */
-	protected function remap_keys ($result = null, $controller = null) {
+	protected function remap_keys ($result = null, $controller = null, $tools_table = null) {
 		// define keys array
 		$this->keys = array("switch"=>"deviceId", "state"=>"tag", "ip_addr"=>"ip");
 
@@ -767,8 +763,8 @@ class Common_api_functions {
 		if($controller=="vrfs")  	{ $this->keys['vrfId'] = "id"; }
 		if($controller=="circuits") { $this->keys['cid'] = "circuit_id"; }
 		if($controller=="l2domains"){ $this->keys['permissions'] = "sections"; }
-		if($this->_params->controller=="tools" && $this->_params->id=="deviceTypes")  { $this->keys['tid'] = "id"; }
-		if($this->_params->controller=="tools" && $this->_params->id=="nameservers")  { $this->keys['permissions'] = "sections"; }
+		if($this->_params->controller=="tools" && $tools_table=="deviceTypes")  { $this->keys['tid'] = "id"; }
+		if($this->_params->controller=="tools" && $tools_table=="nameservers")  { $this->keys['permissions'] = "sections"; }
 		if($this->_params->controller=="subnets" )  								  { $this->keys['ip'] = "ip_addr"; }
 
 		// special keys for POST / PATCH
@@ -776,8 +772,8 @@ class Common_api_functions {
 		if($this->_params->controller=="circuits")   								  { $this->keys['cid'] 		= "circuit_id"; }
 		}
 
-		// POST / PATCH
-		if ($_SERVER['REQUEST_METHOD']=="POST" || $_SERVER['REQUEST_METHOD']=="PATCH")		{ return $this->remap_update_keys (); }
+		// POST / PATCH / DELETE
+		if ($_SERVER['REQUEST_METHOD']=="POST" || $_SERVER['REQUEST_METHOD']=="PATCH" || $_SERVER['REQUEST_METHOD']=="DELETE")		{ return $this->remap_update_keys (); }
 		// GET
 		elseif ($_SERVER['REQUEST_METHOD']=="GET")											{ return $this->remap_result_keys ($result); }
 	}

@@ -218,7 +218,7 @@ else {
 
 
 	//form
-	print "<form name='scan-snmp-mac-form' class='scan-snmp-mac-form'>";
+	print "<form name='snmp-mac-form' class='snmp-mac-form'>";
 	print "<table class='table table-striped table-top table-condensed'>";
 
 	// titles
@@ -310,9 +310,9 @@ else {
         			elseif($field['type'] == "date" || $field['type'] == "datetime") {
         				// just for first
         				if($timeP==0) {
-        					print '<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-datetimepicker.min.css">';
-        					print '<script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>';
-        					print '<script type="text/javascript">';
+        					print '<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-datetimepicker.min.css?v='.SCRIPT_PREFIX.'">';
+        					print '<script src="js/bootstrap-datetimepicker.min.js?v='.SCRIPT_PREFIX.'"></script>';
+        					print '<script>';
         					print '$(document).ready(function() {';
         					//date only
         					print '	$(".datepicker").datetimepicker( {pickDate: true, pickTime: false, pickSeconds: false });';
@@ -365,7 +365,7 @@ else {
 	print "<tr>";
 	print "	<td colspan='$colspan'>";
 	print "<div id='subnetScanAddResult'></div>";
-	print "		<a href='' class='btn btn-sm btn-success pull-right' id='saveScanResults' data-script='scan-snmp-mac' data-subnetId='".$_POST['subnetId']."'><i class='fa fa-plus'></i> "._("Add discovered hosts")."</a>";
+	print "		<a href='' class='btn btn-sm btn-success pull-right' id='saveScanResults' data-script='snmp-mac' data-subnetId='".$_POST['subnetId']."'><i class='fa fa-plus'></i> "._("Add discovered hosts")."</a>";
 	print "	</td>";
 	print "</tr>";
 
