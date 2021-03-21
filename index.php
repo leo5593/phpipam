@@ -62,7 +62,7 @@ else {
 
 		# set default pagesize
 		if(!isset($_COOKIE['table-page-size'])) {
-	        setcookie("table-page-size", 50, time()+2592000, "/", false, false, false);
+			setcookie_samesite("table-page-size", 50, 2592000, false);
 		}
 	?>
 	<!DOCTYPE HTML>
@@ -106,8 +106,8 @@ else {
 		<?php } ?>
 
 		<!-- js -->
-		<script type="text/javascript" src="js/jquery-3.3.1.min.js?v=<?php print SCRIPT_PREFIX; ?>"></script>
-		<script type="text/javascript" src="js/jclock.jquery.js?v=<?php print SCRIPT_PREFIX; ?>"></script>
+		<script src="js/jquery-3.5.1.min.js?v=<?php print SCRIPT_PREFIX; ?>"></script>
+		<script src="js/jclock.jquery.js?v=<?php print SCRIPT_PREFIX; ?>"></script>
 		<?php if($_GET['page']=="login" || $_GET['page']=="request_ip") { ?>
 		<script type="text/javascript" src="js/login.js?v=<?php print SCRIPT_PREFIX; ?>"></script>
 		<?php } ?>

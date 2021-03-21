@@ -1,3 +1,22 @@
+== 1.4.2
+
+    Enhancements, changes:
+    ----------------------------
+    + SameSite attribute enabled for site cookies;
+
+    Bugfixes:
+    ----------------------------
+    + Fix generated functions/upgrade_queries.php queries (#3130);
+    + Table layout not aligned (#3105,#3113);
+    + Invalid scan type () error (#2785);
+    + Invalid CSRF cookie editing rack items (#2556);
+    + MySQL 8.0 compatibility (#3036);
+
+    Security Fixes:
+    ----------------------------
+    + Upgraded jQuery to 3.5.1 (#3119);
+    + Stored XSS in instructions widgets (#3025);
+
 == 1.4.1
 
     Bugfixes:
@@ -19,6 +38,7 @@
     + Location data missing in exports. (#2833);
     + Check mysqldump path when exporting database;
     + Current rack position missing when editing a device. (#2545);
+    + Misc html fixes (#3026,#3081,#3082);
     + API:
         + Fixed /user/ calls for SSL with app code (static app code);
         + Address IP field not displayed when using filter_by (#2934);

@@ -796,9 +796,9 @@ $upgrade_queries["1.4.14"][] = "-- Database version bump";
 $upgrade_queries["1.4.14"][] = "UPDATE `settings` set `dbversion` = '14';";
 $upgrade_queries["1.4.14"][] = "-- Change API security";
 $upgrade_queries["1.4.14"][] = "ALTER TABLE `api` CHANGE `app_security` `app_security` SET('ssl_code','ssl_token','crypt','user','none','ssl') CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  DEFAULT 'ssl_token';";
-$upgrade_queries["1.4.14"][] = "UPDATE `api` set `app_security` = 'ssl_token' where `app_security` = 'ssl'";
+$upgrade_queries["1.4.14"][] = "UPDATE `api` set `app_security` = 'ssl_token' where `app_security` = 'ssl';";
 $upgrade_queries["1.4.14"][] = "ALTER TABLE `api` CHANGE `app_security` `app_security` SET('ssl_code','ssl_token','crypt','user','none') CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  DEFAULT 'ssl_token';";
-$upgrade_queries["1.4.14"][] = "ALTER TABLE `api` ADD `app_last_access` DATETIME  NULL";
+$upgrade_queries["1.4.14"][] = "ALTER TABLE `api` ADD `app_last_access` DATETIME  NULL;";
 
 
 #
@@ -940,6 +940,19 @@ $upgrade_queries["1.4.25"][] = "-- Database version bump";
 $upgrade_queries["1.4.25"][] = "UPDATE `settings` set `dbversion` = '25';";
 
 
+#
+# Version 1.41.25 queries
+#
+$upgrade_queries["1.41.25"]   = [];
+$upgrade_queries["1.41.25"][] = "-- Version update";
+$upgrade_queries["1.41.25"][] = "UPDATE `settings` set `version` = '1.41';";
+
+#
+# Version 1.42.25 queries
+#
+$upgrade_queries["1.42.25"]   = [];
+$upgrade_queries["1.42.25"][] = "-- Version update";
+$upgrade_queries["1.42.25"][] = "UPDATE `settings` set `version` = '1.42';";
 
 // output if required
 if(!defined('VERSION') && php_sapi_name()=="cli") {
